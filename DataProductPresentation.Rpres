@@ -1,0 +1,59 @@
+Word Predictor Using Ngrams Models
+========================================================
+author: Khoi Phan
+date: 12/09/2017
+
+Overview
+========================================================
+
+```{r image, echo=FALSE, out.width='100%'}
+knitr::include_graphics('./Overview.bmp')
+```
+
+Training Process
+========================================================
+
+Input: Swift Key English data set (blog, news and twitter) available at [link](https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip).
+
+Preprocessing: contain nine step using R packages and external resource:
+
+  + [Text Mining](https://cran.r-project.org/web/packages/tm/) : for removing number, stop words, punctuation, to lowercase, single character and extra white space.
+  + [Hunspell](https://cran.r-project.org/web/packages/hunspell/index.html) : for removing incorrect words.
+  + [Textstem](https://cran.r-project.org/web/packages/textstem/index.html) : for text lemmatization.
+  + [Profane Dataset](https://www.cs.cmu.edu/~biglou/resources/) : for removing profanity words.
+
+N-grams models (form unigram to pentagram) was created using [Text2vec](http://text2vec.org/vectorization.html#n-grams).
+
+Algorithm
+========================================================
+
+The prediction function was built based on [Stupid Backoff](http://www.aclweb.org/anthology/D07-1090.pdf). Basically, when current model fail to predict a phrase it will fall back to the previous model and multiply the probability of the predict word by a modifier (default is 0.4).
+
+To retrieve a list of candidates from the model, simply compare the input phrase to a map which contains hash of all terms, then the matching terms will be sorted in descending order based on probability of appearing.
+
+If there is no prediction from all models, the function will automatically fall back to unigram and find nearest words to the input by Alphabet ordering.
+
+Demo
+========================================================
+
+You can try the demo at [Shinyapps](https://khoip.shinyapps.io/wordpredictor/). Just input any text and the result will automatically display.
+
+Below is the output from running the algorithm with the input is "love":
+```{r loading, echo=FALSE}
+library(shiny)
+library(tm)
+library(textstem)
+library(hunspell)
+load("./grams.RData")
+load("./profanityWords.RData")
+grams <<- grams
+profanityWords <<- profanityWords
+source("./prediction.R")
+source("./cleanning_text.R")
+source("./incorrect_words_remove.R")
+```
+
+```{r demo, echo=TRUE, out.width='100%'}
+result = PredictNextWord("love")
+result
+```
